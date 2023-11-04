@@ -6,19 +6,19 @@ using TMPro;
 public class ImageManager : MonoBehaviour
 {
     public TakePhoto takePhoto;
-    public TMP_Text confirmationText;
+    //public TMP_Text confirmationText;
     public bool isReplaceConfirmed = false;
 
     public void ConfirmReplace()
     {
         isReplaceConfirmed = true;
-        confirmationText.text = "Replace confirmed";
+        //confirmationText.text = "Replace confirmed";
 
     }
 
     public void CancelReplace()
     {
         isReplaceConfirmed = false;
-        confirmationText.text = "Replace canceled";
+        //confirmationText.text = "Replace canceled";
     }
 }

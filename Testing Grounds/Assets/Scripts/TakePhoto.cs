@@ -84,10 +84,25 @@ public class TakePhoto : MonoBehaviour
         byte[] byteArray = screenshotTexture.EncodeToPNG();
         string filePath = Application.dataPath + "/Images/" + objectName + ".png";
         Directory.CreateDirectory(Application.dataPath + "/Images/");
-        System.IO.File.WriteAllBytes(filePath, byteArray);
+        if(File.Exists(filePath))
 
-        Debug.Log("Screenshot saved as: " + filePath);
-        reticle.SetActive(true);
+        {
+            Debug.Log("exists");
+            reticle.SetActive(true);
+        }
+        else
+        {
+            Debug.Log("I'm new");
+            System.IO.File.WriteAllBytes(filePath, byteArray);
+
+            Debug.Log("Screenshot saved as: " + filePath);
+            reticle.SetActive(true);
+        }
+
+        //System.IO.File.WriteAllBytes(filePath, byteArray);
+
+        //Debug.Log("Screenshot saved as: " + filePath);
+        //reticle.SetActive(true);
     }
 
     private void CameraZoom()
@@ -101,4 +116,5 @@ public class TakePhoto : MonoBehaviour
             photoCamera.fieldOfView = currentZoom;
         }
     }
+
 }

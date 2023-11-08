@@ -7,18 +7,28 @@ public class ImageManager : MonoBehaviour
 {
     public TakePhoto takePhoto;
     //public TMP_Text confirmationText;
-    public bool isReplaceConfirmed = false;
+    public bool replacingImage = true;
+
+
+    void Update()
+    {
+        if(Input.GetKeyDown(KeyCode.Y))
+        {
+            ConfirmReplace();
+        }
+        if(Input.GetKeyDown(KeyCode.N))
+        {
+            CancelReplace();
+        }
+    }
 
     public void ConfirmReplace()
     {
-        isReplaceConfirmed = true;
-        //confirmationText.text = "Replace confirmed";
 
     }
 
     public void CancelReplace()
     {
-        isReplaceConfirmed = false;
-        //confirmationText.text = "Replace canceled";
+
     }
 }

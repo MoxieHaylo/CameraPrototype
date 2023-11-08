@@ -7,6 +7,7 @@ using System;
 
 public class TakePhoto : MonoBehaviour
 {
+    public ImageManager imageManager;
     [Tooltip("Insert the Photography Camera")]
     public Camera photoCamera;
     public GameObject reticle;
@@ -20,6 +21,9 @@ public class TakePhoto : MonoBehaviour
     public float lookSensitivity = 200f;
     float xRotation = 0f;
     private string speciesName;
+
+    public string filePath { get; private set; }
+    public byte[] byteArray { get; private set; }
 
     private void Start()
     {
@@ -74,8 +78,8 @@ public class TakePhoto : MonoBehaviour
         Debug.Log("Click");
         reticle.SetActive(false);
         yield return new WaitForEndOfFrame();
-        int width = 720;
-        int height = 480;
+        int width = Screen.width;
+        int height = Screen.height;
         Texture2D screenshotTexture = new Texture2D(width, height, TextureFormat.ARGB32, false);
         Rect rect = new Rect(0, 0, width, height);
         screenshotTexture.ReadPixels(rect, 0, 0);
@@ -87,8 +91,9 @@ public class TakePhoto : MonoBehaviour
         if(File.Exists(filePath))
 
         {
-            Debug.Log("exists");
+            Debug.Log($"{filePath} exists");
             reticle.SetActive(true);
+            //give player option to replace or discard
         }
         else
         {
@@ -116,5 +121,4 @@ public class TakePhoto : MonoBehaviour
             photoCamera.fieldOfView = currentZoom;
         }
     }
-
 }

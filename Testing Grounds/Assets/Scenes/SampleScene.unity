@@ -356,7 +356,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2b40fca72a7d2234591bd6302e6ddbc6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speciesName: Supurb Fairy Wren
+  speciesName: supurb_fairy_wren
 --- !u!65 &564479910
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -719,6 +719,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e3b6ab8472cba0444ad029d992ba9d96, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  imageManager: {fileID: 2045726147}
   photoCamera: {fileID: 963194227}
   reticle: {fileID: 474019530}
   minZoom: 15
@@ -935,7 +936,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2b40fca72a7d2234591bd6302e6ddbc6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speciesName: Currawong
+  speciesName: currawong
 --- !u!1 &1995148488
 GameObject:
   m_ObjectHideFlags: 0
@@ -998,8 +999,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   takePhoto: {fileID: 963194229}
-  confirmationText: {fileID: 0}
-  isReplaceConfirmed: 0
+  replacingImage: 0
 --- !u!4 &2045726148
 Transform:
   m_ObjectHideFlags: 0

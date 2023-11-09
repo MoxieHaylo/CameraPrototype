@@ -87,28 +87,48 @@ public class TakePhoto : MonoBehaviour
 
         byte[] byteArray = screenshotTexture.EncodeToPNG();
         string filePath = Application.dataPath + "/Images/" + objectName + ".png";
-        Directory.CreateDirectory(Application.dataPath + "/Images/");
-        if(File.Exists(filePath))
+        Directory.CreateDirectory(Application.dataPath + "/Images");
 
+        if (File.Exists(filePath))
         {
             Debug.Log($"{filePath} exists");
+
+            // Show a dialog or UI prompt to the player
+            // You should implement your own UI dialog for player interaction
+            // You can use Unity's UI system for this purpose.
+
+            // For a simple text-based console dialog, you can use Debug.Log
+            Debug.Log("A screenshot with this name already exists. Do you want to replace it? (Y/N)");
+
+            // Check for player input
+            while (true)
+            {
+                if (Input.GetKeyDown(KeyCode.Y))
+                {
+                    File.WriteAllBytes(filePath, byteArray);
+                    Debug.Log("Screenshot replaced.");
+                    break;
+                }
+                else if (Input.GetKeyDown(KeyCode.N))
+                {
+                    Debug.Log("Screenshot not replaced.");
+                    break;
+                }
+
+                yield return null;
+            }
+
             reticle.SetActive(true);
-            //give player option to replace or discard
         }
         else
         {
             Debug.Log("I'm new");
-            System.IO.File.WriteAllBytes(filePath, byteArray);
-
+            File.WriteAllBytes(filePath, byteArray);
             Debug.Log("Screenshot saved as: " + filePath);
             reticle.SetActive(true);
         }
-
-        //System.IO.File.WriteAllBytes(filePath, byteArray);
-
-        //Debug.Log("Screenshot saved as: " + filePath);
-        //reticle.SetActive(true);
     }
+
 
     private void CameraZoom()
     {

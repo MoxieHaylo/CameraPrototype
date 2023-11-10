@@ -22,37 +22,42 @@ public class TakePhoto : MonoBehaviour
     float xRotation = 0f;
     private string speciesName;
 
-    public string filePath { get; private set; }
-    public byte[] byteArray { get; private set; }
+    private bool isChoosing = false;
+    private bool hasMadeChoice = false;
+    public bool replacingScreenshot = true;
+    public GameObject choiceUI;
 
     private void Start()
     {
         photoCamera = Camera.main;
         currentZoom = startingZoom;
         Cursor.lockState = CursorLockMode.Locked;
+        choiceUI.SetActive(false);
     }
 
     private void Update()
     {
-        float mouseX = Input.GetAxis("Mouse X") * lookSensitivity * Time.deltaTime;
-        float mouseY = Input.GetAxis("Mouse Y") * lookSensitivity * Time.deltaTime;
-        xRotation -= mouseY;
-        xRotation = Mathf.Clamp(xRotation, -90f, 90f);
-
-        transform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
-        anchor.Rotate(Vector3.up * mouseX);
-
-        float scrollWheelInput = Input.GetAxis("Mouse ScrollWheel");
-        currentZoom -= scrollWheelInput * zoomSpeed;
-        currentZoom = Mathf.Clamp(currentZoom, minZoom, maxZoom);
-
-        CameraZoom();
-
-        if (Input.GetKeyDown(KeyCode.Space))
+        if(!isChoosing)
         {
-            CaptureScreenshotWithObjectName();
-        }
+            float mouseX = Input.GetAxis("Mouse X") * lookSensitivity * Time.deltaTime;
+            float mouseY = Input.GetAxis("Mouse Y") * lookSensitivity * Time.deltaTime;
+            xRotation -= mouseY;
+            xRotation = Mathf.Clamp(xRotation, -90f, 90f);
 
+            transform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
+            anchor.Rotate(Vector3.up * mouseX);
+
+            float scrollWheelInput = Input.GetAxis("Mouse ScrollWheel");
+            currentZoom -= scrollWheelInput * zoomSpeed;
+            currentZoom = Mathf.Clamp(currentZoom, minZoom, maxZoom);
+
+            CameraZoom();
+
+            if (Input.GetKeyDown(KeyCode.Space) && !isChoosing)
+            {
+                CaptureScreenshotWithObjectName();
+            }
+        }
     }
 
     public void CaptureScreenshotWithObjectName()
@@ -84,7 +89,6 @@ public class TakePhoto : MonoBehaviour
         Rect rect = new Rect(0, 0, width, height);
         screenshotTexture.ReadPixels(rect, 0, 0);
         screenshotTexture.Apply();
-
         byte[] byteArray = screenshotTexture.EncodeToPNG();
         string filePath = Application.dataPath + "/Images/" + objectName + ".png";
         Directory.CreateDirectory(Application.dataPath + "/Images");
@@ -93,32 +97,29 @@ public class TakePhoto : MonoBehaviour
         {
             Debug.Log($"{filePath} exists");
 
-            // Show a dialog or UI prompt to the player
-            // You should implement your own UI dialog for player interaction
-            // You can use Unity's UI system for this purpose.
-
-            // For a simple text-based console dialog, you can use Debug.Log
             Debug.Log("A screenshot with this name already exists. Do you want to replace it? (Y/N)");
-
-            // Check for player input
-            while (true)
+            StartCoroutine(ShowDecisionUI());
+            isChoosing = true;
+            while(isChoosing)
             {
-                if (Input.GetKeyDown(KeyCode.Y))
-                {
-                    File.WriteAllBytes(filePath, byteArray);
-                    Debug.Log("Screenshot replaced.");
-                    break;
-                }
-                else if (Input.GetKeyDown(KeyCode.N))
-                {
-                    Debug.Log("Screenshot not replaced.");
-                    break;
-                }
-
                 yield return null;
-            }
 
-            reticle.SetActive(true);
+                if(hasMadeChoice)
+                {
+                    if (replacingScreenshot)
+                    {
+                        File.WriteAllBytes(filePath, byteArray);
+                        Debug.Log("Replaced");
+                        replacingScreenshot = false;
+                        break;
+                    }
+                    else
+                    {
+                        Debug.Log("Screenshot remained");
+                        break;
+                    }
+                }
+            }
         }
         else
         {
@@ -128,7 +129,6 @@ public class TakePhoto : MonoBehaviour
             reticle.SetActive(true);
         }
     }
-
 
     private void CameraZoom()
     {
@@ -140,5 +140,41 @@ public class TakePhoto : MonoBehaviour
         {
             photoCamera.fieldOfView = currentZoom;
         }
+    }
+
+    private IEnumerator ShowDecisionUI()
+    {
+        yield return new WaitForEndOfFrame();
+        reticle.SetActive(false);
+        choiceUI.SetActive(true);
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+    }
+    private IEnumerator HideDecisionUI()
+    {
+        yield return new WaitForEndOfFrame();
+        reticle.SetActive(true);
+        choiceUI.SetActive(true);
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+        choiceUI.SetActive(false);
+        replacingScreenshot = false;
+        isChoosing = false;
+        hasMadeChoice = false;
+    }
+    void OnYesButtonClick()
+    {
+        replacingScreenshot = true;
+        Debug.Log("Clicked YES");
+        hasMadeChoice = true;
+        StartCoroutine(HideDecisionUI());
+    }
+
+public void OnNoButtonClick()
+    {
+        replacingScreenshot = false;
+        Debug.Log("Clicked NAH");
+        hasMadeChoice = true;
+        StartCoroutine(HideDecisionUI());
     }
 }

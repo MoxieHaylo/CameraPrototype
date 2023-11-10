@@ -7,6 +7,7 @@ using System;
 
 public class TakePhoto : MonoBehaviour
 {
+    public ImageManager imageManager;
     [Tooltip("Insert the Photography Camera")]
     public Camera photoCamera;
     public GameObject reticle;
@@ -21,34 +22,42 @@ public class TakePhoto : MonoBehaviour
     float xRotation = 0f;
     private string speciesName;
 
+    private bool isChoosing = false;
+    private bool hasMadeChoice = false;
+    public bool replacingScreenshot = true;
+    public GameObject choiceUI;
+
     private void Start()
     {
         photoCamera = Camera.main;
         currentZoom = startingZoom;
         Cursor.lockState = CursorLockMode.Locked;
+        choiceUI.SetActive(false);
     }
 
     private void Update()
     {
-        float mouseX = Input.GetAxis("Mouse X") * lookSensitivity * Time.deltaTime;
-        float mouseY = Input.GetAxis("Mouse Y") * lookSensitivity * Time.deltaTime;
-        xRotation -= mouseY;
-        xRotation = Mathf.Clamp(xRotation, -90f, 90f);
-
-        transform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
-        anchor.Rotate(Vector3.up * mouseX);
-
-        float scrollWheelInput = Input.GetAxis("Mouse ScrollWheel");
-        currentZoom -= scrollWheelInput * zoomSpeed;
-        currentZoom = Mathf.Clamp(currentZoom, minZoom, maxZoom);
-
-        CameraZoom();
-
-        if (Input.GetKeyDown(KeyCode.Space))
+        if(!isChoosing)
         {
-            CaptureScreenshotWithObjectName();
-        }
+            float mouseX = Input.GetAxis("Mouse X") * lookSensitivity * Time.deltaTime;
+            float mouseY = Input.GetAxis("Mouse Y") * lookSensitivity * Time.deltaTime;
+            xRotation -= mouseY;
+            xRotation = Mathf.Clamp(xRotation, -90f, 90f);
 
+            transform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
+            anchor.Rotate(Vector3.up * mouseX);
+
+            float scrollWheelInput = Input.GetAxis("Mouse ScrollWheel");
+            currentZoom -= scrollWheelInput * zoomSpeed;
+            currentZoom = Mathf.Clamp(currentZoom, minZoom, maxZoom);
+
+            CameraZoom();
+
+            if (Input.GetKeyDown(KeyCode.Space) && !isChoosing)
+            {
+                CaptureScreenshotWithObjectName();
+            }
+        }
     }
 
     public void CaptureScreenshotWithObjectName()
@@ -74,20 +83,51 @@ public class TakePhoto : MonoBehaviour
         Debug.Log("Click");
         reticle.SetActive(false);
         yield return new WaitForEndOfFrame();
-        int width = 720;
-        int height = 480;
+        int width = Screen.width;
+        int height = Screen.height;
         Texture2D screenshotTexture = new Texture2D(width, height, TextureFormat.ARGB32, false);
         Rect rect = new Rect(0, 0, width, height);
         screenshotTexture.ReadPixels(rect, 0, 0);
         screenshotTexture.Apply();
-
         byte[] byteArray = screenshotTexture.EncodeToPNG();
         string filePath = Application.dataPath + "/Images/" + objectName + ".png";
-        Directory.CreateDirectory(Application.dataPath + "/Images/");
-        System.IO.File.WriteAllBytes(filePath, byteArray);
+        Directory.CreateDirectory(Application.dataPath + "/Images");
 
-        Debug.Log("Screenshot saved as: " + filePath);
-        reticle.SetActive(true);
+        if (File.Exists(filePath))
+        {
+            Debug.Log($"{filePath} exists");
+
+            Debug.Log("A screenshot with this name already exists. Do you want to replace it? (Y/N)");
+            StartCoroutine(ShowDecisionUI());
+            isChoosing = true;
+            while(isChoosing)
+            {
+                yield return null;
+
+                if(hasMadeChoice)
+                {
+                    if (replacingScreenshot)
+                    {
+                        File.WriteAllBytes(filePath, byteArray);
+                        Debug.Log("Replaced");
+                        replacingScreenshot = false;
+                        break;
+                    }
+                    else
+                    {
+                        Debug.Log("Screenshot remained");
+                        break;
+                    }
+                }
+            }
+        }
+        else
+        {
+            Debug.Log("I'm new");
+            File.WriteAllBytes(filePath, byteArray);
+            Debug.Log("Screenshot saved as: " + filePath);
+            reticle.SetActive(true);
+        }
     }
 
     private void CameraZoom()
@@ -100,5 +140,41 @@ public class TakePhoto : MonoBehaviour
         {
             photoCamera.fieldOfView = currentZoom;
         }
+    }
+
+    private IEnumerator ShowDecisionUI()
+    {
+        yield return new WaitForEndOfFrame();
+        reticle.SetActive(false);
+        choiceUI.SetActive(true);
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+    }
+    private IEnumerator HideDecisionUI()
+    {
+        yield return new WaitForEndOfFrame();
+        reticle.SetActive(true);
+        choiceUI.SetActive(true);
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+        choiceUI.SetActive(false);
+        replacingScreenshot = false;
+        isChoosing = false;
+        hasMadeChoice = false;
+    }
+    void OnYesButtonClick()
+    {
+        replacingScreenshot = true;
+        Debug.Log("Clicked YES");
+        hasMadeChoice = true;
+        StartCoroutine(HideDecisionUI());
+    }
+
+public void OnNoButtonClick()
+    {
+        replacingScreenshot = false;
+        Debug.Log("Clicked NAH");
+        hasMadeChoice = true;
+        StartCoroutine(HideDecisionUI());
     }
 }

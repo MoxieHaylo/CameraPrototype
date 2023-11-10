@@ -1,5 +1,9 @@
 fileFormatVersion: 2
+<<<<<<< HEAD
 guid: 5e014f9d2abd2e640b40fee53f03b567
+=======
+guid: 2496ab2ea2236e444bece70ec15d63e3
+>>>>>>> CheckForExistingImage
 folderAsset: yes
 DefaultImporter:
   externalObjects: {}

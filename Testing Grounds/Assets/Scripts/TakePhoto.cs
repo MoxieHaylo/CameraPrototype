@@ -1,9 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Rendering;
 using System.IO;
-using System;
 
 public class TakePhoto : MonoBehaviour
 {
@@ -37,7 +35,7 @@ public class TakePhoto : MonoBehaviour
 
     private void Update()
     {
-        if(!isChoosing)
+        if (!isChoosing)
         {
             float mouseX = Input.GetAxis("Mouse X") * lookSensitivity * Time.deltaTime;
             float mouseY = Input.GetAxis("Mouse Y") * lookSensitivity * Time.deltaTime;
@@ -83,50 +81,50 @@ public class TakePhoto : MonoBehaviour
         Debug.Log("Click");
         reticle.SetActive(false);
         yield return new WaitForEndOfFrame();
+
         int width = Screen.width;
         int height = Screen.height;
         Texture2D screenshotTexture = new Texture2D(width, height, TextureFormat.ARGB32, false);
         Rect rect = new Rect(0, 0, width, height);
         screenshotTexture.ReadPixels(rect, 0, 0);
+
         screenshotTexture.Apply();
+
         byte[] byteArray = screenshotTexture.EncodeToPNG();
         string filePath = Application.dataPath + "/Images/" + objectName + ".png";
         Directory.CreateDirectory(Application.dataPath + "/Images");
 
-        if (File.Exists(filePath))
+        if (!File.Exists(filePath))
         {
             Debug.Log($"{filePath} exists");
-
-            Debug.Log("A screenshot with this name already exists. Do you want to replace it? (Y/N)");
-            StartCoroutine(ShowDecisionUI());
-            isChoosing = true;
-            while(isChoosing)
-            {
-                yield return null;
-
-                if(hasMadeChoice)
-                {
-                    if (replacingScreenshot)
-                    {
-                        File.WriteAllBytes(filePath, byteArray);
-                        Debug.Log("Replaced");
-                        replacingScreenshot = false;
-                        break;
-                    }
-                    else
-                    {
-                        Debug.Log("Screenshot remained");
-                        break;
-                    }
-                }
-            }
-        }
-        else
-        {
             Debug.Log("I'm new");
             File.WriteAllBytes(filePath, byteArray);
             Debug.Log("Screenshot saved as: " + filePath);
             reticle.SetActive(true);
+            yield break;
+        }
+
+        StartCoroutine(ShowDecisionUI());
+        isChoosing = true;
+        while (isChoosing)
+        {
+            yield return null;
+
+            if (hasMadeChoice)
+            {
+                if (replacingScreenshot)
+                {
+                    File.WriteAllBytes(filePath, byteArray);
+                    Debug.Log("Replaced");
+                    replacingScreenshot = false;
+                    break;
+                }
+                else
+                {
+                    Debug.Log("Screenshot remained");
+                    break;
+                }
+            }
         }
     }
 
@@ -170,7 +168,7 @@ public class TakePhoto : MonoBehaviour
         StartCoroutine(HideDecisionUI());
     }
 
-public void OnNoButtonClick()
+    public void OnNoButtonClick()
     {
         replacingScreenshot = false;
         Debug.Log("Clicked NAH");
